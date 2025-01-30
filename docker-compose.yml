@@ -1,0 +1,57 @@
+#version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: laravel_app
+    volumes:
+      - ./app:/var/www/html  # Mount the Laravel app directory
+    working_dir: /var/www/html
+    environment:
+     MYSQL_ROOT_PASSWORD: root
+     MYSQL_DATABASE: pipeline
+     MYSQL_USER: pipeline
+     MYSQL_PASSWORD: pipeline@1210
+      - APP_ENV=production
+      - APP_DEBUG=false
+    networks:
+      - laravel_network
+
+  webserver:
+    image: nginx:latest
+    container_name: laravel_nginx
+    volumes:
+      - ./app:/var/www/html  # Mount the Laravel app directory
+      - ./docker/nginx/pipeline.conf:/etc/nginx/conf.d/default.conf  # NGINX config
+      - ./certs:/etc/nginx/certs  # SSL certificates
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - app
+    networks:
+      - laravel_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: laravel_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pipeline
+      MYSQL_USER: pipeline
+      MYSQL_PASSWORD: pipeline@1210
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - laravel_network
+
+volumes:
+  db_data:
+
+networks:
+  laravel_network:

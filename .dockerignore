@@ -1,0 +1,6 @@
+docker/
+certs/
+vendor/
+node_modules/
+.env
+
