@@ -131,3 +131,9 @@
         </div>
     </body>
 </html>
+
+<div style="text-align: center; margin-top: 20px;">
+    <h2 style="color: green;">🚀 Deployment Successful! 🎉</h2>
+    <p>Last updated on: <strong><?php echo date('Y-m-d H:i:s'); ?></strong></p>
+</div>
+
