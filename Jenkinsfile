@@ -9,18 +9,21 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/sagar1515/pipeline.git'
+                timeout(time: 3, unit: 'MINUTES') {  // ⏳ Stop if clone takes too long
+                    git branch: 'main', url: 'https://github.com/sagar1515/pipeline.git', shallow: true
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Stop running containers
-                    sh 'docker-compose down'
-
-                    // Build new image locally
-                    sh 'docker build -t $IMAGE_NAME -f docker/Dockerfile .'
+                    timeout(time: 5, unit: 'MINUTES') {  // ⏳ Stop if build takes too long
+                        sh '''
+                        docker-compose down  # Only stop old containers, keep volumes
+                        docker build --pull --rm --no-cache -t $IMAGE_NAME -f docker/Dockerfile .  # Optimized build
+                        '''
+                    }
                 }
             }
         }
@@ -28,8 +31,9 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 script {
-                    // Start new containers
-                    sh 'docker-compose up -d'
+                    timeout(time: 3, unit: 'MINUTES') {  // ⏳ Stop if deploy hangs
+                        sh 'docker-compose up -d'
+                    }
                 }
             }
         }
