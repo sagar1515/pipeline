@@ -16,8 +16,11 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker-compose down'  # Stop running containers
-                    sh 'docker build -t $IMAGE_NAME -f docker/Dockerfile .'  # Build new image locally
+                    // Stop running containers
+                    sh 'docker-compose down'
+
+                    // Build new image locally
+                    sh 'docker build -t $IMAGE_NAME -f docker/Dockerfile .'
                 }
             }
         }
@@ -25,7 +28,8 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 script {
-                    sh 'docker-compose up -d'  # Start new containers
+                    // Start new containers
+                    sh 'docker-compose up -d'
                 }
             }
         }
