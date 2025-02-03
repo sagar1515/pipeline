@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                timeout(time: 3, unit: 'MINUTES') {  // ⏳ Stop if checkout takes too long
+                timeout(time: 3, unit: 'MINUTES') {
                     checkout([
                         $class: 'GitSCM',
                         branches: [[name: '*/main']],
@@ -23,7 +23,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    timeout(time: 5, unit: 'MINUTES') {
+                    timeout(time: 10, unit: 'MINUTES') {
                         sh '''
                         docker-compose down
                         docker build --pull --rm --no-cache -t $IMAGE_NAME -f docker/Dockerfile .
@@ -36,7 +36,7 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 script {
-                    timeout(time: 3, unit: 'MINUTES') {
+                    timeout(time: 5, unit: 'MINUTES') {
                         sh 'docker-compose up -d'
                     }
                 }
