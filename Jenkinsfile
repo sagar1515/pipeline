@@ -9,18 +9,30 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/sagar1515/pipeline.git'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[url: 'https://github.com/sagar1515/pipeline.git']],
+                    extensions: [[$class: 'CloneOption', depth: 1, noTags: true, shallow: true]]
+                ])
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Stop running containers
-                    sh 'docker-compose down'
-
-                    // Build new image locally
-                    sh 'docker build -t $IMAGE_NAME -f docker/Dockerfile .'
+                    sh '''
+                    docker-compose down
+                    docker build -t $IMAGE_NAME -f docker/Dockerfile .
+                    '''
                 }
             }
         }
@@ -28,7 +40,6 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 script {
-                    // Start new containers
                     sh 'docker-compose up -d'
                 }
             }

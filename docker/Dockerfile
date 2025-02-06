@@ -4,23 +4,33 @@ FROM php:8.2-fpm
 # Set working directory
 WORKDIR /var/www/html
 
-# Set non-interactive mode to prevent hangs
+# Install system dependencies
 ARG DEBIAN_FRONTEND=noninteractive
-
-# Speed up APT by using a single RUN command
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev libonig-dev \
-    libxml2-dev zip unzip curl git nano \
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    curl \
+    git \
+    nano \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions required for Laravel
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Install PHP extensions required for Laravel, including 'zip'
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application code (but exclude certain files via .dockerignore)
+# Copy application code
 COPY . /var/www/html
+
+# Install Laravel dependencies
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Ensure necessary directories exist
 RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache
