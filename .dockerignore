@@ -1,6 +1,14 @@
+# Ignore unnecessary files
+.dockerignore
+.git
 docker/
 certs/
-vendor/
+temp_app/
+pipeline/
 node_modules/
+vendor/
+storage/
+tests/
 .env
-
+*.log
+*.zip
