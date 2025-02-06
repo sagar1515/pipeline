@@ -9,26 +9,18 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                timeout(time: 3, unit: 'MINUTES') {
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: '*/main']],
-                        userRemoteConfigs: [[url: 'https://github.com/sagar1515/pipeline.git']],
-                        extensions: [[$class: 'CloneOption', depth: 1, noTags: true, shallow: true]]
-                    ])
-                }
+                git branch: 'main', url: 'https://github.com/sagar1515/pipeline.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    timeout(time: 10, unit: 'MINUTES') {
-                        sh '''
-                        docker-compose down
-                        docker build --pull --rm --no-cache -t $IMAGE_NAME -f docker/Dockerfile .
-                        '''
-                    }
+                    // Stop running containers
+                    sh 'docker-compose down'
+
+                    // Build new image locally
+                    sh 'docker build -t $IMAGE_NAME -f docker/Dockerfile .'
                 }
             }
         }
@@ -36,9 +28,8 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 script {
-                    timeout(time: 5, unit: 'MINUTES') {
-                        sh 'docker-compose up -d'
-                    }
+                    // Start new containers
+                    sh 'docker-compose up -d'
                 }
             }
         }
